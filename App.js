@@ -1,6 +1,4 @@
-import { LogBox } from "react-native";
-LogBox.ignoreLogs(["Warning: ..."]);
-LogBox.ignoreAllLogs();
+
 import React from "react";
 import { Animated, Text } from "react-native";
 
@@ -9,8 +7,6 @@ import { AntDesign } from "@expo/vector-icons";
 
 import { LogBox } from 'react-native';
 
-console.disableYellowBox = true;
-LogBox.ignoreAllLogs();
 
 // initialisation du store redux
 import user from "./reducers/user.reducer";

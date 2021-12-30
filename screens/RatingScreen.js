@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 //Var de connexion
 import { REACT_APP_IPSERVER } from "@env";
 //import de la librairie gifted chat avec ses éléments
-import { View, Text } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { HeaderBar } from "../components/Header";
 import { Divider, AirbnbRating, Avatar } from "react-native-elements";
 
