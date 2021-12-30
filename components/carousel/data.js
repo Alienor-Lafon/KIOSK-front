@@ -22,3 +22,4 @@ export default data =
   }
   
 ]
+//données à afficher dans les pages du carousel

@@ -3,7 +3,7 @@ import React from "react";
 //import du header, du texte et de listItem de react native elements
 
 import { Header } from "react-native-elements";
-import { TouchableOpacity, View, KeyboardAvoidingView } from "react-native";
+import { TouchableOpacity, View} from "react-native";
 
 //import des icons depuis fontawesome et ionicons
 import { AntDesign } from "@expo/vector-icons";

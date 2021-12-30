@@ -3,7 +3,6 @@ import { Platform } from "react-native";
 
 import Text from "./Text";
 
-import { StatusBar } from "expo-status-bar";
 
 import { useIsFocused } from "@react-navigation/native";
 
@@ -13,7 +12,7 @@ import { connect } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Avatar, Overlay, ListItem } from "react-native-elements";
-//création d'un composant avatar avec options de taille (petit et moyen)
+//création d'un composant (parent) avatar avec options de taille (petit et moyen)
 
 const AvatarRound = (props) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -35,6 +34,7 @@ const AvatarRound = (props) => {
     size = 25;
   }
 
+  //au clic sur déconnexion, retirer le user du storage local
   function handlePressDeconnexion() {
     AsyncStorage.removeItem("user");
     //props.storeUserReset();
@@ -65,6 +65,7 @@ const AvatarRound = (props) => {
         isVisible={isVisible}
         onBackdropPress={toggleOverlay}
         backdropStyle={{ backgroundColor: "transparent" }}
+        //menu déroulant qui s'affiche au press sur l'avatar
       >
         <ListItem
           containerStyle={{ backgroundColor: "#FAF0E6" }}

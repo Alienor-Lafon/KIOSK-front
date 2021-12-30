@@ -4,7 +4,7 @@ import Carousel, {Pagination} from 'react-native-snap-carousel'
 
 import CarouselCardItem, { SLIDER_WIDTH, ITEM_WIDTH } from './CarouselCardItem'
 import data from './data'
-
+//définit les cartes du carousel
 const CarouselCards = () => {
   const isCarousel = React.useRef(null)
   const [index, setIndex] = React.useState(0)

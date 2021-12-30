@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, KeyboardAvoidingView, Text, Alert } from "react-native";
+
+//import des composants personnalisés
 import { HeaderBar } from "../components/Header";
 import OfferCardLight from "../components/OfferCardLight";
 import { Button, ButtonText } from "../components/Buttons";
+
+
 import { REACT_APP_IPSERVER } from '@env';
 import { Input } from 'react-native-elements';
 import { connect } from 'react-redux';
-// import { set } from 'react-native-reanimated';
+
 
 const QuoteRequestScreen = (props) => {
-  //affichage de l'offre cliquée
+  //permet l'affichage de l'offre cliquée
   const [offer, setOffer] = useState({});
 
   //récupère les infos des inputs
@@ -61,9 +65,9 @@ const QuoteRequestScreen = (props) => {
     setError("")
   }
 
-  //route d'ajout d'un devis
+  //route qui s'active à l'ajout d'un devis
   var addQuotation = async () => {
-    //reçoit depuis offerpage : offerId, providerId(companies)
+    
 
     const saveReq = await fetch(`http://${REACT_APP_IPSERVER}/quotations/add-quotation`, {
       method: 'POST',
@@ -75,7 +79,7 @@ const QuoteRequestScreen = (props) => {
     setQuoteStatus(fromBack.quotationSaved.status)
 
   }
-//fonction déclenchée au press sur le bouton
+//fonction déclenchée au press sur le bouton envoyer
   const quoteRequest = () => {
     props.navigation.navigate("Quotation", { offerId: reqProviderId, quoteStatus: quoteStatus });
     addQuotation();

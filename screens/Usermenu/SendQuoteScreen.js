@@ -10,13 +10,17 @@ import { connect } from 'react-redux';
 const SendQuoteScreen = (props) => {
 
   const[reqQuoteId, setReqQuoteId] = useState(props.route.params.quoteId)
+  //réponses aux questions récupérées de la base de données
   const[answers, setAnswers]= useState([]);
+  //devis provenant de la base de données
   const[quotation, setQuotation] = useState(null);
+  //offre correspondant au devis
   const[offer, setOffer] = useState({})
+  //statut du devis
   const [quoteStatus, setQuoteStatus] = useState("");
 
 
-  
+  //permet de retrouver les infos du devis demandé
   useEffect(() => {
     const findQuotationInfo = async () => {
       const data = await fetch(`http://${REACT_APP_IPSERVER}/quotations/quotation-info/${props.user.token}/${reqQuoteId}`)
@@ -30,7 +34,7 @@ const SendQuoteScreen = (props) => {
   }, []);
 
 
-  //route de modification d'un devis à "envoyé"
+  //route de modification d'un devis au click sur "envoyé". Permet surtout de changer le statut du devis et d'avoir la date d'envoi.
   var sendQuotation = async () => {
 
     const saveReq = await fetch(`http://${REACT_APP_IPSERVER}/quotations/send-quotation`, {
@@ -43,14 +47,14 @@ const SendQuoteScreen = (props) => {
     setQuoteStatus(fromBack.quotationToSend.status)
 
   }
-
+//se déclenche au click sur "envoyer"
   const sendQuote = () => {
     sendQuotation();
     props.navigation.goBack();
     
   }
-// console.log("answers", answers)
 
+//map sur les réponses aux questions renvoyées par le back
 var answersToDisplay = answers.map((answer, i)=>{
   return(
   <View style={{margin:15}}>

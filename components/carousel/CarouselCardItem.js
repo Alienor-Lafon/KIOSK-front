@@ -3,11 +3,16 @@ import { View, StyleSheet, Dimensions, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Text from "../Text";
 
+//définit la largeur du carousel
 export const SLIDER_WIDTH = Dimensions.get('window').width;
+
+//définit la largeur de chaque item, elle correspond à la largeur du carousel
 export const ITEM_WIDTH = Math.round(SLIDER_WIDTH);
 
+//définit les éléments à l'intérieur de chaque carte du carousel
 const CarouselCardItem = ({ item, index }) => {
   return (
+    //éléments récupérés de data
     <View style={styles.container} key={index}>
      
       <Text style={styles.header}>{item.title}</Text>

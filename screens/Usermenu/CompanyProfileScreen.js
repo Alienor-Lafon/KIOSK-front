@@ -8,13 +8,15 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
+
+//import de composants personnalisés
 import { Button, ButtonText } from "../../components/Buttons";
-// import { useForm } from "react-hook-form";
+
 import { Input, Image } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
 
 import { REACT_APP_IPSERVER } from "@env";
-import { ScrollView } from "react-native-gesture-handler";
+
 
 const CompanyProfileScreen = (props) => {
   const [logo, setLogo] = useState("");
@@ -36,7 +38,7 @@ const CompanyProfileScreen = (props) => {
 
   }, []);
 
-//demande d'autorisation pour accéder aux photos du téléphone
+//demande d'autorisation pour accéder aux photos du téléphone lorsqu'on veut changer le logo de profil
   let openImagePickerAsync = async () => {
     let permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -55,19 +57,19 @@ const CompanyProfileScreen = (props) => {
         type: "image/jpeg",
         name: "company_logo.jpg",
       });
-      // requête pour héberger l'image de profil
+      // requête pour héberger l'image de profil dans cloudinary
       let resUpload = await fetch(`http://${REACT_APP_IPSERVER}/companies/logo`, {
         method: "post",
         body: data,
       });
       resUpload = await resUpload.json();
-
+//récupère l'url de cloudinary depuis le back
       setLogo(resUpload.url);
     } else {
-// console.log("annulé");
     }
   };
 
+  //fonction qui s'active lorsqu'on souhaite enregistrer les données modifiées du profil (route en put)
   async function handleclickUpdtate() {
     var companyUpdate = await fetch(
       `http://${REACT_APP_IPSERVER}/companies/update-company`,

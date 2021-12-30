@@ -6,7 +6,7 @@ import { HeaderBar } from '../components/Header';
 import Text from "../components/Text";
 import { ListItem, Avatar } from 'react-native-elements';
 import { REACT_APP_IPSERVER } from '@env'
-// import { State } from 'react-native-gesture-handler';
+
 
 const MessagesScreen = (props) => {
     const isFocused = useIsFocused();
@@ -25,13 +25,16 @@ const MessagesScreen = (props) => {
         }; 
         isFocused && findConversations();
     }, [isFocused]);
+    //permet de déclencher le useEffect et de mettre à jour les conversations du user lorsqu'on retourne sur l'écran "messagesscreen"
 
+    //boucle sur ce qu'on récupère du back.
     var conversationsList = conversations.map((conversation, i) => {
         return (
             <ListItem containerStyle={{
                 justifyContent: 'space-around'
 
         }}
+        //envoi de l'id de la conversation vers chat afin de récupérer les messages qui y correspondent
             onPress={() => props.navigation.navigate('Chat', {convId: conversation.id})}
             key={i}
         >

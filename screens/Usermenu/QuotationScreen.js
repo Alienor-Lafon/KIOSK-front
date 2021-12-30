@@ -1,26 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { Card, Badge } from "react-native-elements";
+
+//composants personnalisés
 import { Button } from "../../components/Buttons";
 import { HeaderBar } from "../../components/Header";
 
 import { useIsFocused } from "@react-navigation/native";
 
-//import du switch
+//import d'un switch d'une librairie
 import Toggle from "react-native-toggle-element";
+
 import { connect } from "react-redux";
 import { REACT_APP_IPSERVER } from "@env";
 
 const QuotationScreen = (props) => {
   const [toggleValue, setToggleValue] = useState(false);
+
+  //quotations correspondent aux devis client (côté client)
   const [quotations, setQuotations] = useState([]);
+
+  //requests correspondent aux demandes client (côté prestataire)
   const [requests, setRequests] = useState([]);
 
   const isFocused = useIsFocused();
 
+  //ces deux variables correspondent aux deux côtés du switch. Leurs propriétés changent lorsqu'on clique sur l'un ou l'autre (couleur du texte, couleur de fond...)
   var leftComponentDisplay;
   var rightComponentDisplay;
 
+  //permet de trouver l'ensemble des devis côté client et des demandes côté prestataires
   useEffect(() => {
     const findQuotations = async () => {
       const data = await fetch(
@@ -34,18 +43,20 @@ const QuotationScreen = (props) => {
       findQuotations();
     }
   }, [isFocused]);
-
+//isFocused permet de déclencher le useEffect et donc de mettre à jour la liste des devis/demandes à chaque fois qu'on revient sur l'écran "quotationscreen"
   
 
   if (toggleValue == false) {
+    //pour les devis en attente
     leftComponentDisplay = (
       <Text style={{ color: "white", fontWeight: "bold" }}>En cours</Text>
     );
     rightComponentDisplay = (
       <Text style={{ color: "#1A0842", fontWeight: "bold" }}>Passés</Text>
     );
-
+//map sur les demandes récupérées du back. Cela ne s'affiche que pour les prestataires.
     var demandes = requests.map((request, i) => {
+      //le statut à afficher, la couleur du badge, le titre du bouton, les boutons changent selon le statut de la demande
       var backgroundRequest;
       var statut;
       var badgeColor;
@@ -69,6 +80,7 @@ const QuotationScreen = (props) => {
               onPress={() =>
                 props.navigation.navigate("SendQuote", { quoteId: request.id })
               }
+              //envoi de l'id du devis 
               size="md"
               color="secondary"
             ></Button>
@@ -116,7 +128,7 @@ const QuotationScreen = (props) => {
             ></Button>
           );
         }
-
+//carte de demande
         return (
           <Card
             key={i}
@@ -184,8 +196,9 @@ const QuotationScreen = (props) => {
         );
       }
     });
-
+//devis côté client
     var devis = quotations.map((quotation, i) => {
+//comme pour les demandes, le statut, la couleur du badge...etc, changent en fonction du statut de la demande
       var statut;
       var badgeColor;
       var title;
@@ -255,7 +268,7 @@ const QuotationScreen = (props) => {
             ></Button>
           );
         }
-
+//carte de devis
         return (
           <Card
             key={i}
@@ -335,7 +348,7 @@ const QuotationScreen = (props) => {
         );
       }
     });
-
+//affichage des cartes de devis et de demande
     return (
       <View style={{ flex: 1, backgroundColor: "white" }}>
         <HeaderBar
@@ -370,17 +383,18 @@ const QuotationScreen = (props) => {
         </ScrollView>
       </View>
     );
-  } else {
+  } else {//si le toggle est à true (côté devis et demandes passés)
     leftComponentDisplay = (
       <Text style={{ color: "#1A0842", fontWeight: "bold" }}>En cours</Text>
     );
     rightComponentDisplay = (
       <Text style={{ color: "white", fontWeight: "bold" }}>Passés</Text>
     );
-
+//côté demandes
     if (requests.length == !0) {
       var requestsDone = requests.map((request, i) => {
         if (request.status == "done") {
+          //ne concerne que les demandes passées ("done")
           return (
             <Card
               key={i}
@@ -458,7 +472,7 @@ const QuotationScreen = (props) => {
         }
       });
     }
-
+//ne concerne que les devis passés ("done")
     var done = quotations.map((quotation, i) => {
       if (quotation.status == "done") {
         return (
@@ -549,7 +563,7 @@ const QuotationScreen = (props) => {
         );
       }
     });
-
+//affichage des devis et demandes
     return (
       <View style={{ flex: 1, backgroundColor: "white" }}>
         <HeaderBar
