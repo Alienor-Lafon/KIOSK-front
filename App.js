@@ -1,12 +1,8 @@
-
 import React from "react";
 import { Animated, Text } from "react-native";
 
 // import du pack d'icônes pour la navigation Tab
 import { AntDesign } from "@expo/vector-icons";
-
-import { LogBox } from 'react-native';
-
 
 // initialisation du store redux
 import user from "./reducers/user.reducer";

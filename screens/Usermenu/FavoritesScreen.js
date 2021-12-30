@@ -26,41 +26,30 @@ const FavoriteScreen = (props) => {
         setFavoriteCompanies([]);
         let offers = [];
         for(let i = 0; i < offersId.length; i++) {
-            //console.log('offerId', offersId[i]);
             var rawDataOffer = await fetch(`http://${REACT_APP_IPSERVER}/offers/${offersId[i].offerId}/${props.user.token}`); // (`adresseIPserveur/route appelée/req.params?req.query`)
             var res = await rawDataOffer.json();
             if (res.result) {
                 offers.push(res.offer);
-                
-                // console.log('offer', offer);
             }
-            //favoriteOffers.push(<View key={i}><OfferCard dataOffre={offer} navigation={props.navigation} /></View>);
         };
         setFavoriteOffers(offers);
         let companiesId = props.user.favorites.filter(e => e.companyId);
         let companies = [];
         for(let i = 0; i < companiesId.length; i++) {
-            //console.log('companiesId', companiesId[i]);
             var rawDataOffer = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companiesId[i].companyId}/${props.user.token}`); // (`adresseIPserveur/route appelée/req.params?req.query`)
             var res = await rawDataOffer.json();
             if (res.result) {
                 companies.push(res.company);
-                //console.log('company', company);
             }
-            //favoriteCompanies.push(<View key={i}><CompanyCard dataCompany={company} navigation={props.navigation} /></View>);
         };
         setFavoriteCompanies(companies);
     }
     isFocused && loadData();
   }, [isFocused]);
 
-  // console.log("favoriteOffers", favoriteOffers);
-  //console.log("favoriteCompanies", favoriteCompanies);
-
   console.log(favoriteOffers.length);
 
   if (!toggleValue && favoriteOffers.length > 0) {
-    //console.log('offer side');
     let leftComponentDisplay = (
       <Text style={{ color: "white", fontWeight: "bold" }}>Offre</Text>
     );
