@@ -52,10 +52,10 @@ const RegisterScreen = (props) => {
     animation.current.play();
     if (formData.email.length > 0 && formData.password.length > 0) {
       let bodyCompany = `companyName=${formData.companyName}`;
-      if (formData.firstName) {
+      if (formData.companyAddress) {
         bodyCompany += `&address=${formData.companyAddress}`;
       }
-      if (formData.lastName) {
+      if (formData.companySIRET) {
         bodyCompany += `&siret=${formData.companySIRET}`;
       }
       if (clientType) {
