@@ -1,32 +1,34 @@
-import React, { useState, useEffect } from 'react';
 import { REACT_APP_IPSERVER } from '@env';
-//Store
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
+
 import { View, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Input, AirbnbRating } from 'react-native-elements';
 import { HeaderBar } from '../components/Header'
 import  CompanyCard  from '../components/CompanyCard'
 import { Button, ButtonText } from "../components/Buttons";
-import { Input, AirbnbRating, Rating } from 'react-native-elements';
 
 
 const LeaveRatingsScreen = (props) => {
 
     const [ rate, setRate ] = useState(0);
     const [ feedback, setFeedback ] = useState("");
-    const [ company, setCompany ] = useState(null);
+    const [ companyId, setCompanyId ] = useState(
+        props.route.params && props.route.params.companyId // paramètres envoyés depuis la page précédente avec props.navigation.navigate
+        ? props.route.params.companyId
+        : null);
 
     // useEffect d'initialisation de la page Company :
     useEffect(() => {
-        console.log(props.route && props.route.params && props.route.params.companyId);
-        let companyId = props.route && props.route.params && props.route.params.companyId;
-        // fonction chargement des infos de la compagnie loggée :
+// console.log(props.route && props.route.params && props.route.params.companyId);
+        // fonction pour chargement des infos de la compagnie loggée :
         async function loadDataCie() {
-            // appel route put pour modifier données company :
-            var rawDataCie = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companyId}/${props.user.token}`); // (`adresseIPserveur/route appelée/req.params?req.query`)
+            // appel route get pour récupérer données company (avec labels & offers) + ratings :
+            var rawDataCie = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companyId}/${props.user.token}`);
             var dataCie = await rawDataCie.json();
 // console.log("dataCie", dataCie.company);
             if (dataCie.result) {
-                setCompany(dataCie.company); // set état company avec toutes data
+                setCompanyId(dataCie.company); // set état company avec toutes data
             }
         }
         loadDataCie();
@@ -42,20 +44,20 @@ const LeaveRatingsScreen = (props) => {
                 rating=${rate}&
                 dateRating=${new Date()}&
                 clientId=${props.user.companyId}&
-                providerId=${company._id}&
+                providerId=${companyId._id}&
                 userId=${props.user._id}`
         })
-        var dataRate = await saveRate.json()
+        var dataRate = await saveRate.json() // récupère la nouvelle évaluation
 // console.log("dataRate", dataRate);
-        props.navigation.navigate("Rating");
-        setFeedback(dataRate.newRatingSaved.feedback)
+        props.navigation.navigate("Rating"); // renvoie vers page Rating
+        setFeedback(dataRate.newRatingSaved.feedback) // set état feedback écrit nouvel avis
 // console.log("dataRate.newRatingSaved.feedback", dataRate.newRatingSaved.feedback);
 // console.log("dans fonction sendRating BIS");
 };
 
-    if (company) {
+    if (companyId) {
 
-    return (
+        return (
     
     <View style={{flex:1}}>
 
@@ -63,15 +65,14 @@ const LeaveRatingsScreen = (props) => {
             onBackPress={() => props.navigation.goBack()}
             leftComponent
             title="Votre avis"
-            navigation={props.navigation}
-            user={props.user}
+            navigation={props.navigation} // voir propriété navigation du composant HeaderBar
+            user={props.user} // infos du store du user
         >
         </HeaderBar>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{backgroundColor:"white"}}>
 
-                <KeyboardAvoidingView 
-                    behavior="position" 
+                <KeyboardAvoidingView behavior="position" 
                     // contentContainerStyle={{alignItems: "center", paddingLeft:20, paddingRight: 20}}
                 >
 
@@ -79,14 +80,14 @@ const LeaveRatingsScreen = (props) => {
                         <View style={{ top:10, paddingLeft:15, paddingRight: 15}}>
                             <CompanyCard
                                 navigation={props.navigation}
-                                dataCompany={company}
+                                dataCompany={companyId}
                             />
                         </View>
 
                         <View style={{top:40, paddingLeft:15, paddingRight: 15}}>
                             <Input
                                 value={feedback}
-                                label={`Décrivez votre expérience avec ${company.companyName}`}
+                                label={`Décrivez votre expérience avec ${companyId.companyName}`}
                                 placeholder='En quelques mots'
                                 onChangeText={(value) => setFeedback(value)}
                             />
@@ -139,11 +140,12 @@ const LeaveRatingsScreen = (props) => {
 
 };
 
-// on récupère le user stocké dans le store : 
+// composant conteneur / parent pour récupèrer le user stocké dans le store / state :
 function mapStateToProps(state) {
-  return { user: state.user }
+    return { user: state.user }  // utilisé ensuite via props.user
 };
 
+// on exporte le composant de présentation, mais aussi le composant conteneur au store (connect) :
 export default connect(mapStateToProps, null)(LeaveRatingsScreen);
 
 

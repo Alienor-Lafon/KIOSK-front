@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { View, ImageBackground, Dimensions } from "react-native";
-import { connect } from "react-redux";
 import { REACT_APP_IPSERVER } from "@env";
+import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
+
+import { View, ImageBackground, Dimensions } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-// Import des composants Button customisés
 import Text from "../components/Text";
 import { ButtonText } from "../components/Buttons";
 import SubCategoriesListHori from "../components/SubCategoriesListHori";
@@ -13,33 +13,37 @@ import Searchbar from "../components/SearchBar";
 
 import { useIsFocused } from "@react-navigation/native";
 
+
 const HomeScreen = (props) => {
+
   const [dataCompany, setDataCompany] = useState(null);
   const [packs, setPacks] = useState([]);
 
+  // gestion de l'affichage (packs) en fonction de l'écran, et non pixel => responsive
   const windowWidth = Dimensions.get("window").width;
   const windowHeight = Dimensions.get("window").height;
 
-  const isFocused = useIsFocused();
+  const isFocused = useIsFocused(); // si le composant est à l'écran, alors on exécute le code
 
-  // useEffect d'initialisation de la page Company :
+  // useEffect d'initialisation de la Home :
   useEffect(() => {
+
     // DANS USE : fonction chargement des infos de la compagnie loggée :
     if (isFocused) {
-      //console.log("props.user", props.user);
+//console.log("props.user", props.user);
       async function loadDataCie() {
-        var rawDataCieList = await fetch(
-          `http://${REACT_APP_IPSERVER}/companies/all/${props.user.token}`
-        ); // (`adresseIPserveur/route appelée/req.params?req.query`)
+        // récupère TOUTES les company en DB :
+        var rawDataCieList = await fetch(`http://${REACT_APP_IPSERVER}/companies/all/${props.user.token}`);
         var dataCieList = await rawDataCieList.json();
+        // affichage random d'une compagnie : 
         if (dataCieList.result) {
           const random = Math.floor(
             Math.random() * dataCieList.companies.length
           );
-          //var rawDataCie = await fetch(`http://${REACT_APP_IPSERVER}/companies/${dataCieList.companies[random]}/${props.user.token}`); // (`adresseIPserveur/route appelée/req.params?req.query`)
-          var rawDataCie = await fetch(`http://${REACT_APP_IPSERVER}/companies/61b72b8f3ef976a3b8be1b12/${props.user.token}`); // (`adresseIPserveur/route appelée/req.params?req.query`)
+          // récupère LA company random : (!!! ici cieId en dur)
+          var rawDataCie = await fetch(`http://${REACT_APP_IPSERVER}/companies/61b72b8f3ef976a3b8be1b12/${props.user.token}`);
           var dataCie = await rawDataCie.json();
-          // console.log("dataCie", dataCie);
+// console.log("dataCie", dataCie);
           if (dataCie.result) {
             setDataCompany(dataCie.company); // set état company avec toutes data
           }
@@ -48,46 +52,46 @@ const HomeScreen = (props) => {
       loadDataCie();
     }
 
+    // DANS USE : fonction chargement de TOUTES les catégories :
     var setcategorieslist = async function () {
-      const data = await fetch(
-        `http://${REACT_APP_IPSERVER}/recherche/getcategories`
-      );
+      const data = await fetch(`http://${REACT_APP_IPSERVER}/recherche/getcategories`);
       const body = await data.json();
-
       var categorieslist = body.categorieList;
-      props.setcategoriesList(categorieslist);
+      props.setcategoriesList(categorieslist); // appel de la fonction du dispacth
     };
-    setcategorieslist();
+    setcategorieslist(); // appel fonction ligne 55
 
+    // DANS USE : fonction chargement des infos de TOUS les packs :
     async function loadDataPacks() {
       // appel route get pour récupérer données de tous les packs :
-      var rawDataPacks = await fetch(
-        `http://${REACT_APP_IPSERVER}/recherche/getPacks`
-      ); // (`adresseIPserveur/route appelée/req.params?req.query`)
+      var rawDataPacks = await fetch(`http://${REACT_APP_IPSERVER}/recherche/getPacks`);
       var dataPacks = await rawDataPacks.json();
       if (dataPacks.result) {
-        setPacks([...dataPacks.dataPack]);
+        setPacks([...dataPacks.dataPack]); // je récupère le tableau de l'état Packs et je rajoute les packs (car .push pas popssible sur état)
       }
-      //console.log("dataPacks", dataPacks);
+//console.log("dataPacks", dataPacks);
     }
     loadDataPacks();
   }, []);
 
-  //console.log("état packs", packs);
+//console.log("état packs", packs);
 
   return (
+
     <View style={{ flex: 1, backgroundColor: "white" }}>
+
       {/* View pour NAVBAR */}
       <View>
         <HeaderBar
           title="Kiosk"
-          navigation={props.navigation}
-          user={props.user}
+          navigation={props.navigation} // voir propriété navigation du composant HeaderBar
+          user={props.user} // infos du store du user
         />
       </View>
 
-      {/* View pour la bar de recherche */}
       <ScrollView showsVerticalScrollIndicator={false}>
+
+        {/* View pour la barre de recherche */}
         <View style={{ alignItems: "center", justifyContent: "center" }}>
           <Searchbar navigation={props.navigation}></Searchbar>
         </View>
@@ -100,7 +104,7 @@ const HomeScreen = (props) => {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 15,
+              marginBottom: 15
             }}
           >
             <View style={{ marginHorizontal: 15 }}>
@@ -122,7 +126,7 @@ const HomeScreen = (props) => {
           ></SubCategoriesListHori>
         </View>
 
-        {/* View pour l'entrperise de la semaine */}
+        {/* View pour l'entreprise de la semaine */}
         <View style={{ marginTop: 10 }}>
           <View
             style={{
@@ -130,7 +134,7 @@ const HomeScreen = (props) => {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 15,
+              marginBottom: 15
             }}
           >
             <View style={{ marginHorizontal: 15 }}>
@@ -153,9 +157,7 @@ const HomeScreen = (props) => {
         {/* NOS PACKS */}
         <View style={{ marginTop: 20, marginBottom: 30 }}>
           <View>
-            <Text
-              style={{ fontWeight: "bold", fontSize: 18, marginHorizontal: 15 }}
-            >
+            <Text style={{ fontWeight: "bold", fontSize: 18, marginHorizontal: 15 }}>
               Nos packs
             </Text>
 
@@ -168,29 +170,27 @@ const HomeScreen = (props) => {
                 justifyContent: "space-evenly",
                 alignContent: "space-around",
                 top: 20,
-                paddingVertical: 10,
+                paddingVertical: 10
               }}
             >
               {packs
                 ? packs.map((e, i) => (
                     <View key={i} style={{ marginBottom: "3%" }}>
                       <ImageBackground
-                        source={{
-                          uri: `http://${REACT_APP_IPSERVER}/images/assets/${e.packImage}`,
-                        }}
+                        source={{uri: `http://${REACT_APP_IPSERVER}/images/assets/${e.packImage}`}}
                         imageStyle={{ borderRadius: 20 }}
                         style={{
                           margin: 3,
                           height: 200,
                           width: windowWidth / 2.4,
-                          justifyContent: "center",
+                          justifyContent: "center"
                         }}
                       >
                         <Text
                           style={{
                             color: "#FFFFFF",
                             textAlign: "center",
-                            paddingHorizontal: 10,
+                            paddingHorizontal: 10
                           }}
                           onPress={() =>
                             props.navigation.navigate("ResultsPacks", {
@@ -206,26 +206,33 @@ const HomeScreen = (props) => {
                   ))
                 : null}
             </View>
+
           </View>
         </View>
+
       </ScrollView>
+
     </View>
   );
 };
 
+// composant conteneur / parent pour récupèrer le user stocké dans le store / state :
 function mapStateToProps(state) {
   return {
-    user: state.user,
-    recherche: state.recherche,
+    user: state.user,  // utilisé ensuite via props.user
+    recherche: state.recherche
   };
 }
 
+// composant conteneur / parent pour stocker le user dans le store :
 function mapDispatchToProps(dispatch) {
   return {
+    // fonction de dispatch attendant d'être appelée (props.setCategoriesList()) avec un paramètre dans composant de présentation / enfant : 
     setcategoriesList: function (categorieslist) {
-      dispatch({ type: "setcategoriesList", categorieslist });
+      dispatch({ type: "setcategoriesList", categorieslist }); // appel le reducer qui répondra à action.type === setcategoriesList
     },
   };
 }
 
+// on exporte le composant de présentation, mais aussi les composants conteneurs au store (connect) :
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

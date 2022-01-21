@@ -1,68 +1,64 @@
-import React, { useState, useEffect } from "react";
-//Store
-import { connect } from "react-redux";
-//Var de connexion
 import { REACT_APP_IPSERVER } from "@env";
-//import de la librairie gifted chat avec ses éléments
+import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
+
 import { View, Text, ScrollView } from "react-native";
-import { HeaderBar } from "../components/Header";
 import { Divider, AirbnbRating, Avatar } from "react-native-elements";
+import { HeaderBar } from "../components/Header";
+
 
 const RatingScreen = (props) => {
-  // états infos pour récupérer ratings :
-  const [companyId, setCompanyId] = useState(
-    props.route.params && props.route.params.companyId
-      ? props.route.params.companyId
-      : null
-  ); // pramaètre envoyé depuis la page précéndete via props.navigattion.navigate
-  const [token, setToken] = useState(
-    props.user && props.user.token ? props.user.token : null
-  ); // si user exist + token exist > j'envoie le token du MAPSTATE ou celui en dur
-  const [ratings, setRatings] = useState([]);
-  const [avgRate, setAvgRate] = useState(0);
 
-  // useEffect d'initialisation de la page Company :
+  const [ companyId, setCompanyId ] = useState(
+    props.route.params && props.route.params.companyId // paramètres envoyés depuis la page précédente avec props.navigation.navigate
+    ? props.route.params.companyId
+    : null
+  );
+  const [ token, setToken ] = useState(
+    props.user && props.user.token ? props.user.token : null // si user (store) exist + token (store) exist > j'envoie le token du store (ou null)
+  );
+  const [ ratings, setRatings ] = useState([]);
+  const [ avgRate, setAvgRate ] = useState(0);
+
+  // useEffect d'initialisation de la page Rating :
   useEffect(() => {
-    // DANS USE : fonction chargement des infos de la compagnie loggée :
+    // fonction chargement des infos de la compagnie loggée :
     async function loadDataCie() {
-      // appel route put pour modifier données company
-      var rawRatings = await fetch(
-        `http://${REACT_APP_IPSERVER}/ratings/${companyId}/${token}`
-      ); // (`adresseIPserveur/route appelée/req.params?req.query`)
+      // appel route get pour récupérer évaluations de la company affichée :
+      var rawRatings = await fetch(`http://${REACT_APP_IPSERVER}/ratings/${companyId}/${token}`);
       var dataRatings = await rawRatings.json();
-      //console.log("dataRatings.ratings", dataRatings.ratings); // = ARRAY d'OBJETS
-      //console.log(dataRatings.ratings.length);
+//console.log("dataRatings.ratings", dataRatings.ratings); // = ARRAY d'OBJETS
+//console.log(dataRatings.ratings.length);
       if (dataRatings.result) {
         setRatings(dataRatings.ratings);
         setAvgRate(dataRatings.avg[0].averageNoteByCie);
-        // console.log("avg", dataRatings.avg);
-        // console.log("avg", dataRatings.avg[0].averageNoteByCie)
+// console.log("avg", dataRatings.avg);
+// console.log("avg", dataRatings.avg[0].averageNoteByCie)
       }
     }
     loadDataCie();
   }, []);
 
-  const dateFormat = function (date) {
-    var newDate = new Date(date);
+  // fonction d'affichage de la date :
+  const dateFormat = function (date) { // focntion dateFormat qui attend un paramètre
+    var newDate = new Date(date); // on récupère la date envoyée au-desssus
     var format =
-      newDate.getDate() +
-      "/" +
-      (newDate.getMonth() + 1) +
-      "/" +
-      newDate.getFullYear();
+      newDate.getDate() + "/" + (newDate.getMonth() + 1) + "/" + newDate.getFullYear(); // jour CHIFFRE/mois/année
     return format;
   };
 
-  // console.log("état ratings", ratings);
+// console.log("état ratings", ratings);
 
   return (
+
     <View style={{ flex: 1, backgroundColor: "white" }}>
+
       <HeaderBar
         title="Avis"
         leftComponent
         user={props.user}
-        navigation={props.navigation}
-        onBackPress={() => props.navigation.goBack()}
+        navigation={props.navigation}  // voir propriété navigation du composant HeaderBar
+        onBackPress={() => props.navigation.goBack()} // infos du store du user
       ></HeaderBar>
 
       <Divider
@@ -99,16 +95,16 @@ const RatingScreen = (props) => {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {ratings.map(function (e, i) {
-          // console.log("e", e);
+// console.log("e", e);
           return (
-            <View style={{ paddingBottom: 30 }} key={i}>
+            <View key={i} style={{ paddingBottom: 30 }}>
               <View
                 style={{
                   display: "flex",
                   flexDirection: "row",
                   left: 15,
                   marginTop: 20,
-                  marginRight: 30,
+                  marginRight: 30
                 }}
               >
                 {e.userId && e.userId.avatar && (
@@ -116,32 +112,24 @@ const RatingScreen = (props) => {
                 )}
                 <View style={{ left: 10 }}>
                   <Text>
-                    {e.userId && e.userId.firstName && e.userId.firstName}{" "}
-                    {e.userId && e.userId.lastName && e.userId.lastName}
+                    {e.userId && e.userId.firstName && e.userId.firstName}{" "}{e.userId && e.userId.lastName && e.userId.lastName}
                   </Text>
                   <Text>
-                    {e.userId && e.userId.companyName && e.clientId.companyName}{" "}
-                    - {e.dateRating && dateFormat(e.dateRating)}
+                    {e.userId && e.userId.companyName && e.clientId.companyName}{" "} - {" "}{e.dateRating && dateFormat(e.dateRating)}
                   </Text>
                 </View>
               </View>
-              <View
-                style={{ display: "flex", flexDirection: "column", left: 15 }}
-              >
-                {/* <View style={{marginRight:30, backgroundColor:"blue"}}> */}
+              <View style={{ display: "flex", flexDirection: "column", left: 15 }}>
                 <Text style={{ flexShrink: 1, top: 10, marginRight: 30 }}>
                   {e.feedback && e.feedback}
                 </Text>
-                {/* </View> */}
-                <View
-                  style={{ alignItems: "flex-start", top: 15, marginRight: 30 }}
-                >
+                <View style={{ alignItems: "flex-start", top: 15, marginRight: 30 }}>
                   <AirbnbRating
                     style={{ marginTop: 10 }}
                     selectedColor="#F47805"
                     unSelectedColor="#F4780533"
                     reviewColor="#F47805"
-                    defaultRating={e.rating ? e.rating : 3} //changer avec rating
+                    defaultRating={e.rating ? e.rating : 3}
                     isDisabled
                     count={5}
                     size={20}
@@ -153,13 +141,15 @@ const RatingScreen = (props) => {
           );
         })}
       </ScrollView>
+
     </View>
   );
 };
 
-// on récupère le user stocké dans le store :
+// composant conteneur / parent pour récupèrer le user stocké dans le store / state :
 function mapStateToProps(state) {
-  return { user: state.user };
+  return { user: state.user };  // utilisé ensuite via props.user
 }
 
+// on exporte le composant de présentation, mais aussi le composant conteneur au store (connect) :
 export default connect(mapStateToProps, null)(RatingScreen);

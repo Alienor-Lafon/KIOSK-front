@@ -118,7 +118,7 @@ function mapDispatchToProps(dispatch) {
       dispatch({ type: "storeUser", user });
     },
     storeUserReset: function () {
-      dispatch({ type: "storeUserReset" });
+      dispatch({ type: "storeUserReset" }); // reset de user dans store à la déconnexion
     },
   };
 }

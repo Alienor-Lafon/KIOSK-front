@@ -31,7 +31,7 @@ const OfferScreen = (props) => {
 
     const [offer, setOffer] = useState(null),
         [company, setCompany] = useState(null),
-        [offerId, setOfferId] = useState(props.route.params && props.route.params.offerId ? props.route.params.offerId : "61b0e6837ee15e4f2a1a936f" ),
+        [offerId, setOfferId] = useState(props.route.params && props.route.params.offerId ? props.route.params.offerId : null ), // recupère paramètre de pros.navigation.navigate
         [token, setToken] = useState(null),
         [visible, setVisible] = useState(false),
         [inputOverlay, setInputOverlay] = useState(''),

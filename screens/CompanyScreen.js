@@ -1,29 +1,26 @@
-import { REACT_APP_IPSERVER } from "@env"; // mettre à la place de notre url d'ip avec http:// devant = varibale d'environnement
-import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  ImageBackground,
-  TextInput,
-  KeyboardAvoidingView,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-import { Card, Image, ListItem, Overlay } from "react-native-elements";
+import { REACT_APP_IPSERVER } from "@env"; // mettre à la place de notre url d'ip avec http:// devant = variable d'environnement
+import React, { useState, useEffect, useRef } from "react"; // import de React par défaut, puis des Hooks
 import { connect } from "react-redux";
-import { ScrollView } from "react-native-gesture-handler";
 
+// import des composants bulit-in :
+import { View, ImageBackground, TextInput, KeyboardAvoidingView, StyleSheet, TouchableOpacity } from "react-native";
+import { Card, Image, ListItem, Overlay } from "react-native-elements";
+import { ScrollView } from "react-native-gesture-handler";
+import LottieView from "lottie-react-native";
+import * as ImagePicker from "expo-image-picker"; // permet d'accéder aux images de téléphone
+
+// import des composants créés :
 import Text from "../components/Text";
 import { ButtonText, Button } from "../components/Buttons";
 import { HeaderBar } from "../components/Header";
 import OfferCardLight from "../components/OfferCardLight";
 
-import LottieView from "lottie-react-native";
-import * as ImagePicker from "expo-image-picker";
 
 const CompanyScreen = (props) => {
-  // ?????
+
+  // création du hook de référence :
   const animation = useRef(null);
-  // variables de display :
+  // création des variables de display :
   var displayCieImg;
   var displayDescCie;
   var displayLabels;
@@ -33,9 +30,9 @@ const CompanyScreen = (props) => {
   const [company, setCompany] = useState(null);
   const [ratings, setRatings] = useState(null);
   const [companyId, setCompanyId] = useState(
-    props.route.params && props.route.params.companyId
-      ? props.route.params.companyId
-      : null
+    props.route.params && props.route.params.companyId // paramètres envoyés depuis la page précédente avec props.navigation.navigate
+    ? props.route.params.companyId
+    : null
   );
   const [token, setToken] = useState("");
   const [image, setImage] = useState(null);
@@ -48,20 +45,18 @@ const CompanyScreen = (props) => {
   const [inputOverlay, setInputOverlay] = useState("");
   const [valueToChange, setValueToChange] = useState(null);
 
-  //console.log("ratings", ratings);
   // useEffect d'initialisation de la page Company :
   useEffect(() => {
+
     // DANS USE : fonction chargement des infos de la compagnie loggée :
     async function loadDataCie() {
-      // appel route put pour modifier données company
-      var rawDataCie = await fetch(
-        `http://${REACT_APP_IPSERVER}/companies/${companyId}/${props.user.token}`
-      ); // (`adresseIPserveur/route appelée/req.params?req.query`)
+      // appel route get pour récupérer données company (avec labels & offers) + ratings :
+      var rawDataCie = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companyId}/${props.user.token}`);
       var dataCie = await rawDataCie.json();
-      // console.log("dataCie", dataCie);
+// console.log("dataCie", dataCie);
       if (dataCie.result) {
-        setCompany(dataCie.company); // set état company avec toutes data
-        setRatings(dataCie.ratings); // set état ratings avec toutes data
+        setCompany(dataCie.company);
+        setRatings(dataCie.ratings);
         setImage(dataCie.company.companyImage);
         setToken(dataCie.company.token);
       }
@@ -70,26 +65,27 @@ const CompanyScreen = (props) => {
 
     // DANS USE : fonction chargement des labels à choisir :
     async function loadDataLabels() {
-      // appel route get pour récupérer données labels DB
+      // appel route get pour récupérer données labels DB :
       var rawDataLabels = await fetch(
         `http://${REACT_APP_IPSERVER}/companies/labels`
       );
       var dataLabels = await rawDataLabels.json();
-      // console.log("rawDataLabels", rawDataLabels);
-      // console.log("dataLabels.labels", dataLabels);
+// console.log("rawDataLabels", rawDataLabels);
+// console.log("dataLabels.labels", dataLabels);
       setLabels(dataLabels.dataLabels);
-      // console.log("dataLabels from Fetch", dataLabels.dataLabels);
-      // console.log("état", labels);
+// console.log("dataLabels from Fetch", dataLabels.dataLabels);
+// console.log("état", labels);
     }
     loadDataLabels();
 
     // get like status in store user
     var user = props.user;
     var userLikes = user.favorites;
-    setIsLiked(userLikes.some((e) => e.companyId && e.companyId === companyId));
+    setIsLiked(userLikes.some((e) => e.companyId && e.companyId === companyId)); // si une company est dans les favoris, l'état isLiked passe à true
   }, []);
+  // FIN USE
 
-  // Demande de l'autorisation d'accéder à la galerie d'image de l'utilisateur
+  // Demande d'autorisation d'accéder à la galerie d'image de l'utilisateur :
   let openImagePickerAsync = async () => {
     let permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -97,35 +93,35 @@ const CompanyScreen = (props) => {
       alert("Permission to access camera roll is required!");
       return; // arrête la fonction
     }
-
-    // on récupère l'uri de l'image et on la stocke dans un état
+    // ensuite on récupère l'uri de l'image et on la stocke dans un état :
     let pickerResult = await ImagePicker.launchImageLibraryAsync();
     if (pickerResult.uri) {
       // url stockage tel
       setImage(pickerResult.uri);
-      var data = new FormData();
-      data.append("image", {
+      // on envoie l'image via FormData : 
+      var data = new FormData(); // création de l'objet FormData sous variable data
+      data.append("image", { // rajout à variable data (.append) des infos : 1er paramètre = nom du fichier tel qu’il sera envoyé au Backend
+        // 2eme paramètre = objet avec infos du fichier à envoyer :
         uri: pickerResult.uri,
         type: "image/jpeg",
         name: "image_header.jpg",
       });
-      // requête pour héberger l'image de profil
+
+      // ensuite requête pour héberger l'image de profil :
       let resUpload = await fetch(`http://${REACT_APP_IPSERVER}/image`, {
         method: "post",
-        body: data,
+        body: data // envoi de l'objet data (FormData avec infos fichier)
       });
       resUpload = await resUpload.json();
 
-      // on ajoute l'url de l'image héberger au body de la prochaine requête
+      // ensuite on ajoute l'url de l'image hébergée au body de la prochaine requête :
       if (resUpload.result) {
         let body = `token=${token}=${resUpload.url}`; // url cloudinary
-        const dataRaw = await fetch(
-          `http://${REACT_APP_IPSERVER}/companies/${companyId}`,
+        const dataRaw = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companyId}`, // renvoie juste result, donc true ou false
           {
-            // renvoie jsute result, donc true ou flase
             method: "PUT",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: body,
+            body: body
           }
         );
         var res = await dataRaw.json(); // true ou false
@@ -138,8 +134,7 @@ const CompanyScreen = (props) => {
 
   // fonction gestion labels :
   var handleSubmitLabels = async (labelId) => {
-    const dataRawLab = await fetch(
-      `http://${REACT_APP_IPSERVER}/companies/${companyId}`,
+    const dataRawLab = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companyId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -147,9 +142,9 @@ const CompanyScreen = (props) => {
       }
     );
     var resLab = await dataRawLab.json();
-    // console.log("resLab", resLab);
-    // console.log("resLab.dataCieFull.labels", resLab.dataCieFull.labels);
-    setCompany(resLab.dataCieFull); // les labels sont dans company
+// console.log("resLab", resLab);
+// console.log("resLab.dataCieFull.labels", resLab.dataCieFull.labels);
+    setCompany(resLab.dataCieFull); // les labels sont dans company/dataCieFull
     setVisibleLabel(false);
   };
 
@@ -184,54 +179,54 @@ const CompanyScreen = (props) => {
     setVisibleLabel(!visibleLabel);
   };
 
-  //overlay :
+  // overlay :
   const handleOverlaySubmit = async () => {
     setVisible(!visible);
     let body = `token=${token}`;
     if (valueToChange === "description") {
-      body += `&description=${inputOverlay}`;
+      body += `&description=${inputOverlay}`; // concaténation & nouvelle assignation => body = body+&description=${inputOverlay}
     }
     if (valueToChange === "offre") {
       body += `&offerName=${inputOverlay}`;
     }
-    const dataRaw = await fetch(
-      `http://${REACT_APP_IPSERVER}/companies/${companyId}`,
+    const dataRaw = await fetch(`http://${REACT_APP_IPSERVER}/companies/${companyId}`, // renvoie juste result, donc true ou false
       {
-        // renvoie jsute result, donc true ou flase
         method: "PUT",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body,
+        body: body
       }
     );
     var res = await dataRaw.json(); // true ou false
     if (res.result) {
-      // console.log('offerSaved', res.offerSaved);
+// console.log('offerSaved', res.offerSaved);
       if (valueToChange == "offre" && res.offerSaved) {
-        props.navigation.navigate("OfferPage", { offerId: res.offerSaved._id });
+        props.navigation.navigate("OfferPage", { offerId: res.offerSaved._id }); // on envoie en paramètres de la navigation l'id de l'offre jsute créée (récupéré dans props.route.params dans offerScreen)
       }
       setCompany(res.dataCieFull);
     }
   };
 
+  // like d'une company :
   const handleLikeClick = async () => {
     animation.current.reset();
     !isLiked ? animation.current.play(0, 40) : animation.current.play(40, 75);
     let body = `token=${token}&companyId=${companyId}&userId=${props.user._id}`;
-    const dataRaw = await fetch(`http://${REACT_APP_IPSERVER}/companies/like`, {
-      // renvoie jsute result, donc true ou flase
+    const dataRaw = await fetch(`http://${REACT_APP_IPSERVER}/companies/like`,  // renvoie juste result, donc true ou false
+    {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body,
+      body: body
     });
     var res = await dataRaw.json(); // true ou false
     if (res.result) {
-      props.storeUser(res.user);
+      props.storeUser(res.user); // stockage dans le store via dispatch
     }
   };
+// console.log(props.user.type);
 
-  // console.log(props.user.type);
+  // gestion displays selon data DB (filled) / !data = par défaut (blank) :
 
-  // gestion displays selon data / !data :
+  // image de la company :
   if (company && company.companyImage) {
     displayCieImg = (
       <ImageBackground source={{ uri: image }} style={{ height: 200 }}>
@@ -248,11 +243,11 @@ const CompanyScreen = (props) => {
             shadowColor: "rgba(0,0,0,0.4)",
             shadowOffset: {
               width: 0,
-              height: 2,
+              height: 2
             },
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
-            elevation: 5,
+            elevation: 5
           }}
           onPress={() => handleLikeClick()}
         >
@@ -262,8 +257,6 @@ const CompanyScreen = (props) => {
             progress={isLiked ? 0.5 : 0}
             style={[{ marginTop: 2, backgroundColor: "transparent" }]}
             source={require("../assets/like.json")}
-            // OR find more Lottie files @ https://lottiefiles.com/featured
-            // Just click the one you like, place that file in the 'assets' folder to the left, and replace the above 'require' statement
           />
         </TouchableOpacity>
         {props.user.type === "partner" && (
@@ -272,7 +265,7 @@ const CompanyScreen = (props) => {
               position: "absolute",
               bottom: "5%",
               right: "5%",
-              marginRight: 15,
+              marginRight: 15
             }}
           >
             <ButtonText
@@ -303,6 +296,7 @@ const CompanyScreen = (props) => {
     );
   }
 
+  // decription de la company :
   if (company && company.description) {
     displayDescCie = (
       <Card key={1} containerStyle={styles.container}>
@@ -312,7 +306,7 @@ const CompanyScreen = (props) => {
             flexDirection: "row",
             justifyContent: "space-between",
             left: 5,
-            marginRight: 15,
+            marginRight: 15
           }}
         >
           <Card.Title style={{ marginHorizontal: 10 }}>
@@ -343,7 +337,7 @@ const CompanyScreen = (props) => {
               backgroundColor: "#FAF0E6",
               height: 160,
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             <ButtonText
@@ -357,6 +351,7 @@ const CompanyScreen = (props) => {
     );
   }
 
+  // labels de la company :
   if (company && company.labels.length > 0) {
     displayLabels = (
       <Card key={1} containerStyle={styles.container}>
@@ -366,7 +361,7 @@ const CompanyScreen = (props) => {
             flexDirection: "row",
             justifyContent: "space-between",
             left: 5,
-            marginRight: 15,
+            marginRight: 15
           }}
         >
           <Card.Title style={{ marginHorizontal: 10 }}>
@@ -380,16 +375,13 @@ const CompanyScreen = (props) => {
             />
           )}
         </View>
-
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={{ display: "flex", flexDirection: "row" }}>
             {company.labels.map((label, i) => (
-              <View style={{ alignItems: "center" }} key={i}>
+              <View  key={i} style={{ alignItems: "center" }}>
                 <View style={{ marginBottom: 10, paddingHorizontal: 10 }}>
                   <Image
-                    source={{
-                      uri: `http://${REACT_APP_IPSERVER}/images/assets/${label.logo}`,
-                    }}
+                    source={{uri: `http://${REACT_APP_IPSERVER}/images/assets/${label.logo}`}}
                     style={{ width: 100, height: 100, resizeMode: "contain" }}
                   ></Image>
                 </View>
@@ -418,13 +410,12 @@ const CompanyScreen = (props) => {
               backgroundColor: "#FAF0E6",
               height: 260,
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             <Text
               style={{ textAlign: "center", marginTop: 10, marginBottom: 10 }}
-            >
-              Avez-vous des labels ?
+              >Avez-vous des labels ?
             </Text>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={{ flex: 1, width: 300, height: 400 }}>
@@ -433,9 +424,7 @@ const CompanyScreen = (props) => {
                   return (
                     <ListItem key={i} bottomDivider>
                       <Image
-                        source={{
-                          uri: `http://${REACT_APP_IPSERVER}/images/assets/${label.logo}`,
-                        }}
+                        source={{uri: `http://${REACT_APP_IPSERVER}/images/assets/${label.logo}`}}
                         style={{ width: 50, height: 50, resizeMode: "contain" }}
                       />
                       <ListItem.Content style={{ flexDirection: "row" }}>
@@ -444,7 +433,7 @@ const CompanyScreen = (props) => {
                             style={{
                               right: 10,
                               flexShrink: 1,
-                              left: 10,
+                              left: 10
                             }}
                           >
                             {label.labelName}
@@ -468,6 +457,7 @@ const CompanyScreen = (props) => {
     );
   }
 
+  // affichage des logos : si la cie a des ratings, alors j'affiche les logos des entreprises qui ont évalué :
   if (ratings && ratings.length > 0) {
     displayRatings = (
       <Card key={1} containerStyle={styles.container}>
@@ -477,7 +467,7 @@ const CompanyScreen = (props) => {
             flexDirection: "row",
             justifyContent: "space-between",
             left: 5,
-            marginRight: 15,
+            marginRight: 15
           }}
         >
           <Card.Title style={{ marginHorizontal: 10 }}>
@@ -498,13 +488,13 @@ const CompanyScreen = (props) => {
                     shadowColor: "rgba(0,0,0,0.4)",
                     shadowOffset: {
                       width: 0,
-                      height: 2,
+                      height: 2
                     },
                     shadowOpacity: 0.25,
                     shadowRadius: 3.84,
                     elevation: 5,
                     alignItems: "center",
-                    justifyContent: "center",
+                    justifyContent: "center"
                   }}
                 >
                   <Image
@@ -513,7 +503,7 @@ const CompanyScreen = (props) => {
                       width: 70,
                       height: 70,
                       resizeMode: "contain",
-                      borderRadius: 50,
+                      borderRadius: 50
                     }}
                   ></Image>
                 </View>
@@ -534,6 +524,7 @@ const CompanyScreen = (props) => {
     );
   }
 
+  // offres de la company :
   if (company && company.offers) {
     displayOffers = (
       <Card key={1} containerStyle={styles.container}>
@@ -543,7 +534,7 @@ const CompanyScreen = (props) => {
             flexDirection: "row",
             justifyContent: "space-between",
             left: 5,
-            marginRight: 15,
+            marginRight: 15
           }}
         >
           <Card.Title style={{ marginHorizontal: 10 }}>
@@ -580,7 +571,7 @@ const CompanyScreen = (props) => {
               backgroundColor: "#FAF0E6",
               height: 160,
               justifyContent: "center",
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             <Text style={{ textAlign: "center" }}>
@@ -598,19 +589,16 @@ const CompanyScreen = (props) => {
     );
   }
 
+
   return (
-    <View
-      style={{ flex: 1, justifyContent: "center", backgroundColor: "#fff" }}
-    >
-      {/* OVERLAY description : */}
+    <View style={{ flex: 1, justifyContent: "center", backgroundColor: "#fff" }}>
+      {/* OVERLAY description & offre : */}
       <Overlay
         overlayStyle={{ width: "80%", padding: 30, borderRadius: 20 }}
         isVisible={visible}
         onBackdropPress={() => toggleOverlay()}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <TextInput
             placeholder={"Entrez votre " + valueToChange}
             value={inputOverlay}
@@ -646,20 +634,16 @@ const CompanyScreen = (props) => {
           <ScrollView showsVerticalScrollIndicator={false} style={{ height: 500 }}>
             <View style={{ flex: 1 }}>
               {labels.map((label, i) => {
-                // console.log("label.logo", label.logo);
+// console.log("label.logo", label.logo);
                 return (
                   <ListItem key={i} bottomDivider>
                     <Image
-                      source={{
-                        uri: `http://${REACT_APP_IPSERVER}/images/assets/${label.logo}`,
-                      }}
+                      source={{uri: `http://${REACT_APP_IPSERVER}/images/assets/${label.logo}`}}
                       style={{ width: 50, height: 50, resizeMode: "contain" }}
                     />
                     <ListItem.Content style={{ flexDirection: "row" }}>
                       <View>
-                        <ListItem.Title
-                          style={{ right: 10, flexShrink: 1, left: 10 }}
-                        >
+                        <ListItem.Title style={{ right: 10, flexShrink: 1, left: 10 }}>
                           {label.labelName}
                         </ListItem.Title>
                       </View>
@@ -684,15 +668,11 @@ const CompanyScreen = (props) => {
         locationIndication
         location={
           company && company.offices.length > 0
-            ? company.offices[0].postalCode +
-              " " +
-              company.offices[0].city +
-              ", " +
-              company.offices[0].country
+            ? company.offices[0].postalCode + " " + company.offices[0].city + ", " + company.offices[0].country
             : "Entreprise"
         }
-        navigation={props.navigation}
-        user={props.user}
+        navigation={props.navigation}  // voir propriété navigation du composant HeaderBar
+        user={props.user}  // infos du store du user
       ></HeaderBar>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -705,15 +685,16 @@ const CompanyScreen = (props) => {
         {/* CARD LABELS COMPANY */}
         <View style={{ flex: 1, paddingVertical: 10 }}>{displayLabels}</View>
 
-        {/* CARD LABELS COMPANY */}
+        {/* CARD CLIENTS COMPANIES */}
         <View style={{ flex: 1, paddingVertical: 10 }}>{displayRatings}</View>
 
-        {/* CARD OFFRES COMPANY */}
+        {/* CARD OFFERS COMPANY */}
         <View style={{ flex: 1, paddingVertical: 10 }}>{displayOffers}</View>
       </ScrollView>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -730,17 +711,21 @@ const styles = StyleSheet.create({
   },
 });
 
-// on récupère le user stocké dans le store :
+
+// composant conteneur / parent pour récupèrer le user stocké dans le store / state :
 function mapStateToProps(state) {
-  return { user: state.user };
+  return { user: state.user }; // utilisé ensuite via props.user
 }
 
+// composant conteneur / parent pour stocker le user dans le store :
 function mapDispatchToProps(dispatch) {
   return {
+    // fonction de dispatch attendant d'être appelée (props.storeUser()) avec un paramètre dans composant de présentation / enfant : 
     storeUser: function (user) {
-      dispatch({ type: "storeUser", user });
+      dispatch({ type: "storeUser", user }); // appel le reducer qui répondra à action.type === storeUser
     },
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CompanyScreen);
+// on exporte le composant de présentation, mais aussi les composants conteneurs au store (connect) :
+export default connect(mapStateToProps, mapDispatchToProps)(CompanyScreen); 

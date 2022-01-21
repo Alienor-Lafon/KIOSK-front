@@ -1,56 +1,50 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+// mettre à la place de notre url d'ip // varibale d'environnement :
+import { REACT_APP_IPSERVER } from "@env"; 
+import React, { useState, useCallback, useRef } from "react";
 import { connect } from "react-redux";
-import {
-  View,
-  Text,
-  ImageBackground,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
+import { View, Text, ImageBackground, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
+import { Input, Image } from "react-native-elements";
+import LottieView from "lottie-react-native";
 import { Button, ButtonText } from "../components/Buttons";
 import * as ImagePicker from "expo-image-picker";
 import { useForm } from "react-hook-form";
-import { Input, Image } from "react-native-elements";
 
-import LottieView from "lottie-react-native";
-
-import { REACT_APP_IPSERVER } from "@env"; // mettre à la place de notre url d'ip // varibale d'environnement
 
 const RegisterScreen = (props) => {
+
+  // useRef
   const animation = useRef(null);
-  // Initialisation des états
+  // initialisation de useForm()
+  const { handleSubmit, setValue } = useForm();
+  // initialisation des états :
   const [currentStep, setCurrentStep] = useState(1),
     [isLoading, setIsLoading] = useState(false),
-    [signUpErrorMessage, setSignUpErrorMessage] = useState(false),
+    [signUpErrorMessage, setSignUpErrorMessage] = useState(false), // erreurs prêtes mais pas affichées
     [imgProfil, setImgProfil] = useState(null);
-
+  // clienttype se charge selon comment il s'enregistre : 
   const clientType = props.route.params && props.route.params.clientType;
 
-  // Demande de l'autorisation d'accéder à la galerie d'image de l'utilisateur
+  // demande de l'autorisation d'accéder à la galerie d'image de l'utilisateur
   let openImagePickerAsync = async () => {
     let permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       alert("Permission to access camera roll is required!");
       return;
     }
-
     // on récupère l'uri de l'image et on la stocke dans un état
     let pickerResult = await ImagePicker.launchImageLibraryAsync();
     setImgProfil(pickerResult.uri);
   };
 
-  // initialisation de useForm()
-  const { handleSubmit, setValue } = useForm();
-
   // fonction qui se déclenche à la validation du formulaire
   const onSubmit = async (formData) => {
+     // animation de chargement :
     setIsLoading(true);
     animation.current.play();
+    // si email et paswword entrés :
     if (formData.email.length > 0 && formData.password.length > 0) {
+      // on créé un body avec ces 2 infos puis on rajoute ce qui est entré dans le formulaire
       let bodyCompany = `companyName=${formData.companyName}`;
       if (formData.companyAddress) {
         bodyCompany += `&address=${formData.companyAddress}`;
@@ -62,15 +56,16 @@ const RegisterScreen = (props) => {
         bodyCompany += `&type=${clientType}`;
       }
 
-      // requête pour créer une company via les infos récupérer du formulaire
+      // requête pour créer une company via les infos récupérer du formulaire :
       let company = await fetch(`http://${REACT_APP_IPSERVER}/companies/`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: bodyCompany,
+        body: bodyCompany
       });
       let resCompany = await company.json();
+      // si la compan a bien été créée :
       if (resCompany.result) {
-        // on créé le body de la prochaine requête (pour créer un user)
+        // grâce aux données companies renvoyées, on créé le body de la prochaine requête (pour créer un user)
         let body = `email=${formData.email}&password=${formData.password}&companyId=${resCompany.company._id}`;
         if (formData.firstName) {
           body += `&firstName=${formData.firstName}`;
@@ -88,25 +83,26 @@ const RegisterScreen = (props) => {
           body += `&type=${clientType}`;
         }
 
-        // on check si l'utilisateur a ajouter une image de profil
-        if (imgProfil) {
-          var data = new FormData();
-          data.append("avatar", {
+        // on check si l'utilisateur a ajouté une image de profil
+        if (imgProfil) { // si oui on charge l'image
+          // on envoie l'image via FormData : 
+          var data = new FormData(); // création de l'objet FormData sous variable data
+          data.append("avatar", { // rajout à variable data (.append) des infos : 1er paramètre = nom du fichier tel qu’il sera envoyé au Backend
+            // 2eme paramètre = objet avec infos du fichier à envoyer :
             uri: imgProfil,
             type: "image/jpeg",
-            name: "user_avatar.jpg",
+            name: "user_avatar.jpg"
           });
           // requête pour héberger l'image de profil
           let resUpload = await fetch(
             `http://${REACT_APP_IPSERVER}/users/avatar`,
             {
               method: "post",
-              body: data,
+              body: data
             }
           );
           resUpload = await resUpload.json();
-
-          // on ajoute l'url de l'image héberger au body de la prochaine requête
+          // si image uploadée : on ajoute l'url de l'image hébergéé au body de la prochaine requête
           if (resUpload.result) {
             body += `&avatar=${resUpload.url}`;
           }
@@ -116,14 +112,14 @@ const RegisterScreen = (props) => {
         let user = await fetch(`http://${REACT_APP_IPSERVER}/users/`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: body,
+          body: body
         });
         let res = await user.json();
         if (res.result) {
-          setIsLoading(false);
-          // on store l'utilisateur dans le store
-          props.storeUser(res.user);
-          // on navigue vers la page company
+          setIsLoading(false); // arrêt loading
+          props.storeUser(res.user); // on store l'utilisateur dans le store
+          AsyncStorage.setItem("user", JSON.stringify(res.user)); // on charge le storage
+          // on navigue vers la page company selon son type et avec les paramètres attachés :
           if (clientType === "partner") {
             //props.navigation.navigate('CompanyPage', { companyId: res.user.companyId});
             props.navigation.push("TabNavigation", {
@@ -133,32 +129,32 @@ const RegisterScreen = (props) => {
                 params: { companyId: res.user.companyId },
               },
             });
-          } else {
+          } else { // clientType === client
             props.navigation.push("TabNavigation");
           }
-        } else {
+        } else { // si email already exists :
           setSignUpErrorMessage(res.message);
         }
-      } else {
+      } else { // si company already exists :
         setSignUpErrorMessage(res.message);
       }
-    } else {
-      let error = [];
+    } else { // si ni email ni password ne sont entrés :
+      let error = []; // on créé un tableau d'erreur
       if (formData.email.length === 0) {
-        error.push("email");
+        error.push("email"); // où on push cette string si email pas entré
       }
       if (formData.password.length === 0) {
-        error.push("password");
+        error.push("password"); // ou cette string si password pas entré
       }
-      setSignUpErrorMessage(error.join(", ") + " missing");
+      setSignUpErrorMessage(error.join(", ") + " missing"); // l'état est setté avec le tableau d'erreur
     }
   };
+
+  // callback déclenché que quand texte change dans input :
   const onChangeField = useCallback(
     (name) => (text) => {
       setValue(name, text);
-    },
-    []
-  );
+    },[]);
 
   const styles = StyleSheet.create({
     container: {
@@ -402,7 +398,7 @@ const RegisterScreen = (props) => {
             zIndex: 10,
             width: "100%",
             height: "50%",
-            backgroundColor: "transparent",
+            backgroundColor: "transparent"
           },
           !isLoading && { zIndex: -1, transform: [{ scale: 0 }] },
         ]}
@@ -465,12 +461,18 @@ const RegisterScreen = (props) => {
   );
 };
 
-function mapDispatchToProps(dispatch) {
+// composant conteneur / parent pour stocker le user dans le store :
+function mapDispatchToProps(dispatch) { 
   return {
+    // fonction de dispatch attendant d'être appelée (props.storeUser()) avec un paramètre dans composant de présentation / enfant :
     storeUser: function (user) {
-      dispatch({ type: "storeUser", user });
+      dispatch({ type: "storeUser", user }); // appel le reducer qui répondra à action.type === storeUser
     },
   };
 }
 
+// on exporte le composant de présentation, mais aussi le composant conteneur au store (connect) :
 export default connect(null, mapDispatchToProps)(RegisterScreen);
+
+
+
