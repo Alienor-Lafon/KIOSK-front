@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 //Store
-//testgit
+//testgithub
 import { connect } from "react-redux";
 //Var de connexion
 import { REACT_APP_IPSERVER } from "@env";
